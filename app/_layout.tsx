@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 
+
 export {
   ErrorBoundary,
 } from 'expo-router';
@@ -40,6 +41,7 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="otp" options={{ headerTitle: "Enter Your Phone Number", headerBackVisible: false }} />
+        <Stack.Screen name="verify/[phone]" options={{ headerTitle: "Verify Your Phone Number", headerBackTitle: "Edit number" }} />
       </Stack>
   );
 }

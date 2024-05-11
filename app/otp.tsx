@@ -1,22 +1,93 @@
 import Colors from '@/constants/Colors'
-import React from 'react'
-import { View, StyleSheet, KeyboardAvoidingView, Text } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router';
+import React, { useState } from 'react'
+import { View, StyleSheet, KeyboardAvoidingView, Text, TouchableOpacity, Platform, ActivityIndicator } from 'react-native'
+import MaskInput from 'react-native-mask-input';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+const ARG_PHONE = [
+  `+`,
+  '5', '4', 
+  ' ',
+  /\d/, /\d/, 
+  ' ',
+  /\d/, /\d/, /\d/, /\d/,
+  ' ',
+  /\d/, /\d/, /\d/, /\d/ 
+];
 
 const otp = () => {
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 90 : 0;
+  const [loading, setLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const { bottom } = useSafeAreaInsets();
+  const sendOTP = async () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      router.push(`/verify/${phoneNumber}`)
+    }, 200)
+  }
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={keyboardVerticalOffset}
+      style={{ flex: 1 }}
+      behavior="padding">
+      {loading && (
+        <View style={[StyleSheet.absoluteFill, styles.loading]}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={{ fontSize: 18, padding: 10 }}>Sending code...</Text>
+        </View>
+      )}
+
       <View style={styles.container}>
         <Text style={styles.description}>
-          Whatsapp will need to verify your account. Carrier charges may apply.
+          WhatsApp will need to verify your account. Carrier charges may apply.
         </Text>
+
         <View style={styles.list}>
           <View style={styles.listItem}>
-            <Text>Argentina</Text>
+            <Text style={styles.listItemText}>Germany</Text>
+            <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
           </View>
+          <View style={styles.separator} />
+
+          <MaskInput
+            value={phoneNumber}
+            keyboardType="numeric"
+            autoFocus
+            placeholder="+12 your phone number"
+            onChangeText={(masked, unmasked) => {
+              setPhoneNumber(masked);
+            }}
+            mask={ARG_PHONE}
+            style={styles.input}
+          />
         </View>
+
+        <Text style={styles.legal}>
+          You must be{' '}
+          <Text style={styles.link}>
+            at least 16 years old
+          </Text>{' '}
+          to register. Learn how WhatsApp works with the{' '}
+          <Text style={styles.link}>
+            Meta Companies
+          </Text>
+          .
+        </Text>
+
+        <View style={{ flex: 1 }} />
+
+        <TouchableOpacity
+          style={[styles.button, phoneNumber !== '' ? styles.enabled : null, { marginBottom: bottom }]}
+          onPress={sendOTP}>
+          <Text style={[styles.buttonText, phoneNumber !== '' ? styles.enabled : null]}>Next</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
-  )
+  );
 }
 
 export default otp
@@ -76,7 +147,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     width: '100%',
-    height: 1,
+    height: StyleSheet.hairlineWidth,
     backgroundColor: Colors.gray,
     opacity: 0.2,
   },

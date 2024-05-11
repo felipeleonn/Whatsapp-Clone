@@ -21,7 +21,7 @@ const Page = () => {
         </Text>
       </Text>
       {/* replace hace que no puedas ir para atras */}
-      <Link href={"/otp"} replace asChild>
+      <Link  href="/otp" asChild>
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Agree & Continue</Text>
         </TouchableOpacity>
