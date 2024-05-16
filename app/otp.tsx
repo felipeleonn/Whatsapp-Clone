@@ -1,8 +1,9 @@
 import Colors from '@/constants/Colors'
+import { useSignUp, useSignIn, isClerkAPIResponseError } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router';
 import React, { useState } from 'react'
-import { View, StyleSheet, KeyboardAvoidingView, Text, TouchableOpacity, Platform, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, KeyboardAvoidingView, Text, TouchableOpacity, Platform, ActivityIndicator, Alert } from 'react-native'
 import MaskInput from 'react-native-mask-input';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -22,13 +23,60 @@ const otp = () => {
   const [loading, setLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const { bottom } = useSafeAreaInsets();
+  const { signUp, setActive } = useSignUp();
+  const { signIn } = useSignIn();
+
+
+
   const sendOTP = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await signUp!.create({
+        phoneNumber
+      });
+
+      signUp!.preparePhoneNumberVerification();
+
       router.push(`/verify/${phoneNumber}`)
-    }, 200)
+
+    } catch(e) {
+
+      if(isClerkAPIResponseError(e)) {
+
+        if (e.errors[0].code === "form_identifier_exists") {
+          console.log("user exists")
+          await trySignIn();
+
+        } else {
+          setLoading(false);
+          Alert.alert("Error", e.errors[0].message)
+        }
+      } 
+    }
   }
+
+  const trySignIn = async () => {
+    console.log('trySignIn', phoneNumber);
+
+    const { supportedFirstFactors } = await signIn!.create({
+      identifier: phoneNumber,
+    });
+
+    const firstPhoneFactor: any = supportedFirstFactors.find((factor: any) => {
+      return factor.strategy === 'phone_code';
+    });
+
+    const { phoneNumberId } = firstPhoneFactor;
+
+    await signIn!.prepareFirstFactor({
+      strategy: 'phone_code',
+      phoneNumberId,
+    });
+
+    router.push(`/verify/${phoneNumber}?signin=true`);
+    setLoading(false);
+  };
+  
   return (
     <KeyboardAvoidingView
       keyboardVerticalOffset={keyboardVerticalOffset}

@@ -1,7 +1,8 @@
 import Colors from '@/constants/Colors';
+import { useSignUp, useSignIn, isClerkAPIResponseError } from '@clerk/clerk-expo';
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import {
   CodeField,
   Cursor,
@@ -13,6 +14,8 @@ const CELL_COUNT = 6
 
 const Page = () => {
   const { phone, signin } = useLocalSearchParams<{phone: string, signin: string }>();
+  const { signUp, setActive } = useSignUp();
+  const { signIn } = useSignIn();
   const [code, setCode] = useState("");
   const ref = useBlurOnFulfill({ value: code, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -34,14 +37,69 @@ const Page = () => {
   }, [code]);
 
   const veryifySignIn = async () => {
+    try {
+      await signIn!.attemptFirstFactor({
+        strategy: 'phone_code',
+        code,
+      });
 
+      await setActive!({ session: signIn!.createdSessionId });
+    } catch (err) {
+      console.log('error', JSON.stringify(err, null, 2));
+      if (isClerkAPIResponseError(err)) {
+        Alert.alert('Error', err.errors[0].message);
+      }
+    }
   };
+
+
   const verifyCode = async () => {
+    try {
+      await signUp!.attemptPhoneNumberVerification({
+        code,
+      });
 
+      await setActive!({ session: signUp!.createdSessionId });
+    } catch (err) {
+      console.log('error', JSON.stringify(err, null, 2));
+      if (isClerkAPIResponseError(err)) {
+        Alert.alert('Error', err.errors[0].message);
+      }
+    }
   };
+
+
   const resendCode = async () => {
+    try {
+      if (signin === 'true') {
+        const { supportedFirstFactors } = await signIn!.create({
+          identifier: phone!,
+        });
 
+        const firstPhoneFactor: any = supportedFirstFactors.find((factor: any) => {
+          return factor.strategy === 'phone_code';
+        });
+
+        const { phoneNumberId } = firstPhoneFactor;
+
+        await signIn!.prepareFirstFactor({
+          strategy: 'phone_code',
+          phoneNumberId,
+        });
+      } else {
+        await signUp!.create({
+          phoneNumber: phone,
+        });
+        signUp!.preparePhoneNumberVerification();
+      }
+    } catch (err) {
+      console.log('error', JSON.stringify(err, null, 2));
+      if (isClerkAPIResponseError(err)) {
+        Alert.alert('Error', err.errors[0].message);
+      }
+    }
   };
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerTitle: phone }} />
