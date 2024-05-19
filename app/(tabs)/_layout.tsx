@@ -34,7 +34,7 @@ const Layout = () => {
         }} 
       />
       <Tabs.Screen 
-        name="ccommunities" 
+        name="communities" 
         options={{
           title: "Communities",
           tabBarIcon: ({ size, color }) => (
@@ -55,6 +55,7 @@ const Layout = () => {
         name="settings" 
         options={{
           title: "Settings",
+          headerShown: false,
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="cog" size={size} color={color} />
           ),

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const Comunities = () => {
+const Communities = () => {
   return (
     <View>
       <Text>communities</Text>
@@ -9,5 +9,5 @@ const Comunities = () => {
   )
 }
 
-export default Comunities
+export default Communities
 const styles = StyleSheet.create({})
