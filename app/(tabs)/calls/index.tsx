@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import Animated, { CurvedTransition, FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
@@ -7,21 +8,38 @@ import { format } from 'date-fns';
 import { defaultStyles } from '@/constants/Styles';
 import calls from '@/assets/data/calls.json';
 import Colors from '@/constants/Colors';
+import { SegmentedControl } from '@/components/SegmentedControl';
+
+const transition = CurvedTransition.delay(100);
 
 const Page = () => {
+  const [selectedOption, setSelectedOption] = useState('All');
+  const [items, setItems] = useState(calls);
   const [isEditing, setIsEditing] = useState(false);
-  const onEdit = () => {}
+  const onEdit = () => {
+    let editingNew = !isEditing;
+    setIsEditing(editingNew);
+  }
+
+  const onSegmentChange = (option: string) => {
+    setSelectedOption(option);
+    if (option === 'All') {
+      setItems(calls);
+    } else {
+      setItems(calls.filter((call) => call.missed));
+    }
+  }
   return (
     <View style={{flex: 1, backgroundColor: Colors.background }}>
       <Stack.Screen
         options={{
-          // headerTitle: () => (
-          //   <SegmentedControl
-          //     options={['All', 'Missed']}
-          //     selectedOption={selectedOption}
-          //     onOptionPress={onSegmentChange}
-          //   />
-          // ),
+          headerTitle: () => (
+            <SegmentedControl
+              options={['All', 'Missed']}
+              selectedOption={selectedOption}
+              onOptionPress={onSegmentChange}
+            />
+          ),
           headerLeft: () => (
             <TouchableOpacity onPress={onEdit}>
               <Text style={{ color: Colors.primary, fontSize: 18 }}>
@@ -35,37 +53,42 @@ const Page = () => {
         contentInsetAdjustmentBehavior='automatic'
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <View style={defaultStyles.block}>
-          <FlatList
-            data={calls}
+        <Animated.View style={defaultStyles.block} layout={transition}>
+          <Animated.FlatList
+            //skipEntering.. para no que haga la animacion cuando carga por primera vez
+            skipEnteringExitingAnimations
+            data={items}
             scrollEnabled={false}
             keyExtractor={(item) => item.id}
             ItemSeparatorComponent={() => <View style={defaultStyles.separator} />}
-            renderItem={({item}) => (
-              <View style={[defaultStyles.item, { paddingLeft: 20 }]}>
-                <Image source={{ uri: item.img }} style={styles.avatar} />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={{ fontSize: 18, color: item.missed ? Colors.red : "#000"  }}>{item.name}</Text>
-                  <View style={{ flexDirection: "row", gap: 4 }}>
-                    <Ionicons 
-                      name={item.video ? "videocam" : "call"}
-                      size={16}
-                      color={Colors.gray}
-                    />
-                    <Text style={{ color: Colors.gray, flex: 1 }}>
-                      {item.incoming ? "Incoming" : "Outgoing"}
-                    </Text>
+            itemLayoutAnimation={transition}
+            renderItem={({item, index}) => (
+              <Animated.View entering={FadeInUp.delay(index * 20)} exiting={FadeOutUp}>
+                <View style={[defaultStyles.item, { paddingLeft: 20 }]}>
+                  <Image source={{ uri: item.img }} style={styles.avatar} />
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={{ fontSize: 18, color: item.missed ? Colors.red : "#000"  }}>{item.name}</Text>
+                    <View style={{ flexDirection: "row", gap: 4 }}>
+                      <Ionicons 
+                        name={item.video ? "videocam" : "call"}
+                        size={16}
+                        color={Colors.gray}
+                      />
+                      <Text style={{ color: Colors.gray, flex: 1 }}>
+                        {item.incoming ? "Incoming" : "Outgoing"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+                    <Text>{format(item.date, 'MM.dd.yy')}</Text>
+                    <Ionicons name="information-circle-outline" size={24} color={Colors.primary} />
                   </View>
                 </View>
-
-                <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
-                  <Text>{format(item.date, 'MM.dd.yy')}</Text>
-                  <Ionicons name="information-circle-outline" size={24} color={Colors.primary} />
-                </View>
-              </View>
+              </Animated.View>
             )}
           />
-        </View>
+        </Animated.View>
       </ScrollView>
     </View>
   );

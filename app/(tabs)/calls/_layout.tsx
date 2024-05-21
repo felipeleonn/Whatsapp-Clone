@@ -10,8 +10,8 @@ const Layout = () => {
         options={{
           title: 'Calls',
           headerLargeTitle: true,
-          headerTransparent: true,
-          headerBlurEffect: 'regular',
+          // headerTransparent: true,
+          // headerBlurEffect: "light",
           headerStyle: {
             backgroundColor: Colors.background,
           },
