@@ -73,7 +73,7 @@ const Page = () => {
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingBottom: 40 }}>|
+        contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={defaultStyles.block}>
           <FlatList
             data={devices}
