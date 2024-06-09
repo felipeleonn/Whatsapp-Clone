@@ -7,11 +7,11 @@ const Layout = () => {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{
+        options={{  
           title: 'Calls',
           headerLargeTitle: true,
-          // headerTransparent: true,
-          // headerBlurEffect: "light",
+          headerTransparent: true,
+          headerBlurEffect: 'regular',
           headerStyle: {
             backgroundColor: Colors.background,
           },
