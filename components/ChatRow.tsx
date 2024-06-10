@@ -20,7 +20,7 @@ const ChatRow: FC<ChatRowProps> = ({ id, from, date, img, msg, read, unreadCount
   return (
     <GestureHandlerRootView>
       <AppleStyleSwipeableRow>
-        <Link href={"/(tabs)/chats"} asChild>
+        <Link href={`/(tabs)/chats/${id}`} asChild>
           <TouchableHighlight activeOpacity={0.8} underlayColor={Colors.lightGray}>
             <View
               style={{
